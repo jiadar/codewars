@@ -41,6 +41,7 @@ class PlayingCards:
     chars = " " + string.ascii_uppercase[:26]
     places = [ pow(27, place) for place in range(0, 52) ]
     MAX_LEX_CODE = 80658175170943878571660636856403766975289505440883277824000000000000
+    FACT = [ math.factorial(i) for i in range(0, 52) ]
 
     @staticmethod
     def lex(msg):
@@ -69,7 +70,7 @@ class PlayingCards:
         return message_str.lstrip()
 
     @staticmethod
-    def factoradic(lex_code):
+    def int_to_factoradic(lex_code):
         q = lex_code
         coeffs = []
         for i in itertools.count(start=1):
@@ -80,15 +81,21 @@ class PlayingCards:
         coeffs.reverse()
         return coeffs
 
-    # Takes a String containing a message, and returns an array of Strings representing
-    # a deck of playing cards ordered to hide the message, or None if the message is invalid.
     @staticmethod
-    def encode(message):
-        lex_code = PlayingCards.lex(message)
-        if lex_code is None:
-            return None
-        f = PlayingCards.factoradic(lex_code)
-        return PlayingCards.perm(f)
+    def factoradic_to_int(coeffs):
+        return sum(PlayingCards.FACT[i] * v for i, v in enumerate(reversed(coeffs)))
+
+    @staticmethod
+    def deck_to_factoradic(enc_deck):
+        f = []
+        cdeck = PlayingCards.deck.copy()
+        for i in itertools.count(start=0):
+            digit = cdeck.index(enc_deck[i]);
+            f.append(digit)
+            cdeck.remove(enc_deck[i])
+            if len(cdeck) == 0:
+                break
+        return f
 
     @staticmethod
     def perm(f):
@@ -99,25 +106,46 @@ class PlayingCards:
             del d[p]
         return res
 
-    # Takes an array of Strings representing a deck of playing cards, and returns
-    # the message that is hidden inside, or None if the deck is invalid.
     @staticmethod
-    def decode(deck):
-        return None
+    def encode(message):
+        lex_code = PlayingCards.lex(message)
+        if lex_code is None:
+            return None
+        f = PlayingCards.int_to_factoradic(lex_code)
+        return PlayingCards.perm(f)
 
     @staticmethod
-    def printdeck(fd, deck, testdeck):
-        errors=' '
+    def decode(deck):
+        f = PlayingCards.deck_to_factoradic(deck)
+        PlayingCards.print_factoradic(f)
+        lex_code = PlayingCards.factoradic_to_int(f)
+        return PlayingCards.message(lex_code)
+
+    @staticmethod
+    def print_place():
         print('place  -> ', end=' ')
         for i in range(0, 52):
             print('{:02d}'.format(i), end=' ')
         print()
+
+    @staticmethod
+    def print_factoradic(fd):
         print('factor -> ', end=' ')
         for i, f in enumerate(fd):
             print('{:02d}'.format(f), end=' ')
-            errors += '-- ' if deck[i] != testdeck[i] else '   '
         print()
-        print('errors -> ' + errors)
+
+    @staticmethod
+    def print_deck(deck):
+        print('result -> ', end=' ')
+        for elt in deck:
+            print(f'{str(elt)}', end=' ')
+        print()
+
+    @staticmethod
+    def printdeck(fd, deck, testdeck):
+        PlayingCards.print_place()
+        PlayingCards.print_factoradic(fd)
         count = 0
         test_str = 'test   ->  '
         print('result -> ', end=' ')
@@ -130,14 +158,41 @@ class PlayingCards:
         print()
         test_str = ''
 
+print()
+p = PlayingCards
+# lex = p.lex('I CANT WAIT TO C MY QT BUT HES AT THE STORE')
+# f = p.int_to_factoradic(lex)
+# i = p.factoradic_to_int(f)
+# e = p.encode('I CANT WAIT TO C MY QT BUT HES AT THE STORE')
+# p.print_deck(e)
+# f = p.deck_to_factoradic(e)
+# p.print_factoradic(f)
+e = p.encode('I CANT WAIT TO C MY QT BUT HES AT THE STORE')
+d = p.decode(e)
+print(d)
+print()
 
-print(PlayingCards.encode('ABC?DEF'))
+#d = PlayingCards.encode('MY QT IS THE BEST')
+#PlayingCards.print_deck(d)
+#m = PlayingCards.decode(d)
+#print(m)
+#PlayingCards.decode(test_deck_a)
+#f = PlayingCards.deck_to_factoradic(test_deck_52_m_1)
+#PlayingCards.print_factoradic(f)
+#l = PlayingCards.lex('DGWBJJDTKUUVXWQNFNWVSEEVDVOHDMUVMDQMCRXDQZZZZZZZ')
+#print(lex_code)
+#f = PlayingCards.deck_to_factoradic(test_deck_52_m_1)
+#i = PlayingCards.factoradic_to_int(f)
+#print(l)
+#print(i)
+#m = PlayingCards.message(i)
+#print(m)
+#print(PlayingCards.encode('ABC?DEF'))
 #lex_code = lex('ATTACK TONIGHT ON CODEWARS')
 #lex_code = lex('A')
 #f = factoradic(lex_code)
 #printdeck(f, perm(f), test_deck_attack)
-#lex_code = PlayingCards.lex('DGWBJJDTKUUVXWQNFNWVSEEVDVOHDMUVMDQMCRXDQZZZZZZZ')
-#f = PlayingCards.factoradic(lex_code)
+#f = PlayingCards.lex_to_factoradic(lex_code)
 #PlayingCards.printdeck(f, PlayingCards.perm(f), test_deck_52_m_1)
 #printdeck(f, kth_perm(deck, f), deck)
 #print(chars)

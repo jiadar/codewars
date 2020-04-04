@@ -8,6 +8,6 @@ verify_ssl = true
 [packages]
 pytest = "*"
 colorama = "*"
-
+numpy = "*"
 [requires]
 python_version = "3.8"

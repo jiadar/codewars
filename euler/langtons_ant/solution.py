@@ -1,5 +1,6 @@
 import time
 import pdb
+import numpy as np
 import pprint
 from dataclasses import dataclass, field
 import os
@@ -7,8 +8,8 @@ import colorama
 
 
 class g:
-    BLACK = 'BLK L'
-    WHITE = 'WHT R'    
+    BLACK = 'BLK'
+    WHITE = 'WHT'    
     NORTH = '^'
     SOUTH = 'v'
     EAST = '>'
@@ -42,10 +43,10 @@ class g:
     }
 
 
-class BoardFun:
+class BoardUtils:
 
     @staticmethod
-    def draw(graph, location, orientation, drawsize=20):
+    def _draw(graph, location, orientation, drawsize=20):
         size = 100
         rows = [ [] for x in range(0, size) ]
         for r in range(0, size):
@@ -74,7 +75,7 @@ class BoardFun:
         for row in range(s, e):
             rval += '{:2}'.format(row) + ' '
             for col in range(s, e):
-                 rval += rows[row][col] + ' '
+                rval += rows[row][col] + ' '
             rval += '\n'
         rval += '  '
         for x in range(s, e):
@@ -83,13 +84,29 @@ class BoardFun:
 
     @staticmethod
     def print(location, color, orientation):
-        print('({:2}, {:2}): {:6} {:2}'.format(location[0], location[1], color, orientation), end=' ')
-#        print('({:2}, {:2}): {:2}'.format(location[0], location[1], state.orientation), end=' ')
+        print('({:2}, {:2}): {:3} {:1}'.format(location[0], location[1], color, orientation))
 
     @staticmethod
-    def printloc(location):
-        print('({:2}, {:2})'.format(location[0], location[1]), end='')
-        
+    def draw(graph,
+             location,
+             orientation,
+             boardsize,
+             prev_location,
+             prev_color,
+             prev_orientation,
+             next_color,
+             next_orientation,
+             num_black_squares,
+             step=True):
+        BoardUtils._draw(graph, location, orientation, boardsize)
+        step and print('Step {:6}: '.format(step), end='')
+        BoardUtils.print(prev_location, prev_color, prev_orientation)
+        print('Change to  : ', end='')
+        BoardUtils.print(prev_location, next_color, next_orientation)
+        print('Move to    : ', end='')
+        BoardUtils.print(location, graph[location], orientation)
+        print('BLK Squares: {:6}'.format(num_black_squares))
+
 
 class Board:
 
@@ -101,28 +118,20 @@ class Board:
         self.boardsize = boardsize
         
     def move(self, debug=False, step=100, stepsize=25):
-        cur_location = self.location
-        (cur_row, cur_col) = cur_location
-        cur_color = self.graph[self.location]
-        cur_orientation = self.orientation
-        next_color = g.FLIP[cur_color]
-        next_orientation = g.ORIENTATION_LOOKUP[cur_color][cur_orientation]        
-        next_row = cur_row + g.MOVES[next_orientation]['row']
-        next_col = cur_col + g.MOVES[next_orientation]['col']
-        next_location = (next_row, next_col)
+        # Save previos location, color, and orientation for printing the board
+        prev_location = self.location
+        prev_color = self.graph[self.location]
+        prev_orientation = self.orientation
+        next_orientation = g.ORIENTATION_LOOKUP[prev_color][prev_orientation]        
+        next_location = tuple(np.add(prev_location, (g.MOVES[next_orientation]['row'],
+                                                     g.MOVES[next_orientation]['col'])))
+        next_color = g.FLIP[prev_color]
 
-        # Some printing
-        if (step % stepsize == 0):
-            BoardFun.draw(self.graph, self.location, self.orientation, self.boardsize)
-            step and print('Step {:2}: '.format(step), end='')
-            BoardFun.print(cur_location, cur_color, cur_orientation)
-            print(' ==> ', end=' ')
-            BoardFun.print(cur_location, next_color, next_orientation)
-            print(' ==> ', end=' ')
-            print()
-
-        # Flip Color at current location
-        self.graph[cur_location] = next_color
+        # Flip Color at current location. Only keep black in the graph
+        if next_color == g.BLACK:
+            self.graph[prev_location] = next_color
+        else:
+            self.graph.pop(prev_location)
 
         # Set the color at the next location to white if it has not been visited
         if next_location not in self.graph:
@@ -130,6 +139,29 @@ class Board:
         self.location = next_location
         self.orientation = next_orientation
 
+        # Some printing
+        draw_data = {
+            'graph': self.graph,
+            'location': self.location,
+            'orientation': self.orientation,
+            'boardsize': self.boardsize,
+            'prev_location': prev_location,
+            'prev_color': prev_color,
+            'prev_orientation': prev_orientation,
+            'next_color': next_color,
+            'next_orientation': next_orientation,
+            'num_black_squares': self.num_black_squares(),
+            'step': step
+        }
+        step % stepsize == 0 and BoardUtils.draw(**draw_data)
+        
+    def num_black_squares(self):
+        count = 0
+        for v in self.graph.values():
+            if v == g.BLACK:
+                count += 1
+        return count
+        
     def get(self):
         return self.graph
 
@@ -144,21 +176,30 @@ def clear():
 
 map = True
 debug = False
-stepsize = 100
+stepsize = 50
 steps = range(1, 1000)
+boardstart = (50, 50)
+boardsize = 20
+
+pp = pprint.PrettyPrinter(indent=2)
 colorama.init(autoreset=True)
 map and move_cursor(0, 0)
 map and clear()
-ant = Board((50, 50), 30)
+ant = Board(boardstart, boardsize)
 for step in steps:
     map and move_cursor(0, 0)
-#    map and BoardFun.draw(ant.graph, ant.location, 8)
-    pp = pprint.PrettyPrinter(indent=2)
+    map and debug and clear()
     ant.move(debug=debug, step=step, stepsize=stepsize)
-    debug and pp.pprint(ant.get())
+    graph = ant.get()
+    debug and print('\nGraph:')
+    debug and pp.pprint(graph)
     step % stepsize == 0 and os.system('read -sn 1 -p "Press any key to continue..."')
     
-    
+clear()
+move_cursor(0, 0)
+graph = ant.get()
+pp.pprint(graph)
+print(f'Number of black squares at step {step}: {len(graph.keys())}')
 
 #pp.pprint(len(graph.keys()))
 

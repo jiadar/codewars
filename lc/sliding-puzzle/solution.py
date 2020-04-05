@@ -1,9 +1,7 @@
-import pdb
 import queue
 import enum
 import pprint
 from itertools import permutations
-from typing import List
 
 
 class Solution:
@@ -81,23 +79,6 @@ class Solution:
         board_lst[swap_idx], board_lst[zero_idx] = board_lst[zero_idx], board_lst[swap_idx]
         return ''.join(board_lst)
 
-    def find_path(self, start_vertex, end_vertex, path=None):
-        if path == None:
-            path = []
-        path = path + [start_vertex]
-        if start_vertex == end_vertex:
-            return path
-        if start_vertex not in self.graph:
-            return None
-        for vertex in self.graph[start_vertex]:
-            if vertex not in path:
-                extended_path = self.find_path(vertex, 
-                                               end_vertex, 
-                                               path)
-                if extended_path:
-                    return extended_path
-        return None
-
     def bfs(self, start, goal='123450'):
         visited = {vertex: False for vertex in self.graph.keys()}
         # parents = {}
@@ -117,18 +98,16 @@ class Solution:
                     q.put(adjacent)
                     levels[adjacent] = levels[v] + 1
                     
-s = Solution()
-base_board = '012345'
-for board_tuple in permutations(base_board):
-    board = ''.join(board_tuple)
-    for direction in [s.Direction.UP, s.Direction.DOWN, s.Direction.LEFT, s.Direction.RIGHT]:
-        next_board = Solution.move(board, direction)
-        s.add_edge((board, next_board))
 
-path = s.bfs('123540')
-pp = pprint.PrettyPrinter(indent=2)
-pp.pprint(path)
-#pp.pprint(path)
-#pp.pprint(s.g())
-#graph = s.g()
-#pdb.set_trace()
+if __name__ == "__main__":
+    s = Solution()
+    base_board = '012345'
+    for board_tuple in permutations(base_board):
+        board = ''.join(board_tuple)
+        for direction in [s.Direction.UP, s.Direction.DOWN, s.Direction.LEFT, s.Direction.RIGHT]:
+            next_board = Solution.move(board, direction)
+            s.add_edge((board, next_board))
+
+    path = s.bfs('412503')
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint(path)

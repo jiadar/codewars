@@ -7,7 +7,7 @@ from itertools import permutations
 class Solution:
 
     graph = {}
-    
+
     def vertices(self):
         return list(self.graph.keys())
 
@@ -32,7 +32,7 @@ class Solution:
                 if {neighbour, vertex} not in edge_list:
                     edge_list.append({vertex, neighbour})
         return edge_list
-    
+
     def to_str(self):
         res = "vertices: "
         for k in self.graph:
@@ -44,7 +44,7 @@ class Solution:
 
     def g(self):
         return self.graph
-    
+
     class Direction(enum.Enum):
         UP = 1
         DOWN = 2
@@ -71,7 +71,7 @@ class Solution:
                              (direction == Solution.Direction.RIGHT and right_not_possible) or
                              (direction == Solution.Direction.DOWN and down_not_possible) or
                              (direction == Solution.Direction.UP and up_not_possible))
-        
+
         if move_not_possible:
             return board
 
@@ -97,7 +97,7 @@ class Solution:
                     # parents[adjacent] = v
                     q.put(adjacent)
                     levels[adjacent] = levels[v] + 1
-                    
+
 
 if __name__ == "__main__":
     s = Solution()

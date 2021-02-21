@@ -41,6 +41,7 @@ def squaresum(n: int):
                 g.add_edge(i, j)
                 g.add_edge(j, i)
 
+    pprint.pprint(g)
     for i in range(1, 16):
         path = g.dfs_vertex_cover(i, [], [])
         if path:

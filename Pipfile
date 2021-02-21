@@ -9,5 +9,12 @@ verify_ssl = true
 pytest = "*"
 colorama = "*"
 numpy = "*"
+pandas = "*"
+tabula-py = "*"
+flask = "*"
+flask-restful = "*"
+requests = "*"
+sqlalchemy = "*"
+
 [requires]
 python_version = "3.8"

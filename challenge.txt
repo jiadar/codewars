@@ -1,0 +1,47 @@
+Get this file: https://www.fs.usda.gov/Internet/FSE_DOCUMENTS/fseprd695975.pdf
+
+Read the PDF file
+
+Answer: Use python and tabula to make a csv
+
+Clean the CSV so that it's useful
+use something like a regex to filter out the bad lines
+
+Add a unique primary key to each record
+i=0; for line in `cat cleaned.csv`; do ((i++)); echo "$i, $line"; done
+
+Turn the data into JSON with the following fields for each record, with an appropriate data type. When doing this, add a unique primary key to each record using whatever method you would prefer.
+- type -> Permit Type
+- date1 -> Preferred Entry Date 1
+- date2 ->  Preferred Entry Date 2
+- date3 -> Preferred Entry Date 3
+- zone1 -> Preferred Zone 1
+- zone2 -> Preferred Zone 2
+- zone3 -> Preferred Zone 3
+- awarded -> Result Status
+- awardPref -> Awarded Preference
+- awardDate -> Awarded Entrance Date
+- awardZone -> Awarded Entrance Code / Zone
+- awardSize -> Awarded Group Size
+
+For instance, you may have this record in your JSON:
+    "9": {
+        "type": "Overnight Permit",
+        "date1": "7/20/2020",
+        "zone1": "Colchuck Zone",
+        "date2": "7/22/2020",
+        "zone2": "Colchuck Zone",
+        "date3": "7/21/2020",
+        "zone3": "Colchuck Zone",
+        "awarded": "Awarded",
+        "awardPref": "1",
+        "awardDate": "7/20/2020",
+        "awardZone": "Colchuck Zone",
+        "awardSize": "4"
+    },
+
+schema:
+
+Zone
+Request
+Award
